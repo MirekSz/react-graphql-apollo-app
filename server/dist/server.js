@@ -16,6 +16,8 @@ var _cors = require('cors');
 
 var _cors2 = _interopRequireDefault(_cors);
 
+var _util = require('util');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // const express = require('express');
@@ -44,12 +46,17 @@ var COURSES = require('./data/courses');
 //     })
 // });
 
-var typeDefs = '\n    type CourseType {\n        id: ID!\n        name: String\n        description: String\n        level: String\n    }\n\n    input CourseInput {\n        id: ID\n        name: String!\n        description: String!\n        level: String\n    }\n\n    type Query {\n        allCourses: [CourseType]\n    }\n\n    type Mutation {\n        createCourse(input: CourseInput): CourseType\n        deleteCourse(id: ID): CourseType\n    }\n';
+var typeDefs = '\n    type CourseType {\n        id: ID!\n        name: String\n        description: String\n        level: String\n    }\n\n    input CourseInput {\n        id: ID = -1\n        name: String!\n        description: String!\n        level: String\n    }\n\n    type Query {\n        allCourses: [CourseType],\n        course(id: ID): CourseType\n    }\n\n    type Mutation {\n        createCourse(input: CourseInput): CourseType\n        deleteCourse(id: ID): CourseType\n    }\n';
 
 var resolvers = {
     Query: {
         allCourses: function allCourses() {
             return COURSES;
+        },
+        course: function course(error, data) {
+            return COURSES.find(function (el) {
+                return el.id == data.id;
+            });
         }
     },
     Mutation: {
@@ -60,12 +67,16 @@ var resolvers = {
                 description = input.description,
                 level = input.level;
 
+            if (id == -1) {
+                id = COURSES.length + 1;
+            }
             COURSES.push({
                 id: id,
                 name: name,
                 description: description,
                 level: level
             });
+            input.id = id;
             return input;
         },
         deleteCourse: function deleteCourse(_, _ref2) {

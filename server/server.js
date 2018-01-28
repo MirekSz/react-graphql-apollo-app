@@ -39,7 +39,7 @@ const typeDefs = `
     }
 
     input CourseInput {
-        id: ID
+        id: ID = -1
         name: String!
         description: String!
         level: String
@@ -62,18 +62,22 @@ const resolvers = {
             return COURSES;
         },
         course: (error, data) => {
-            return COURSES.find(el => el.id === data.id);
+            return COURSES.find(el => el.id == data.id);
         }
     },
     Mutation: {
         createCourse: (_, { input }) => {
             let { id, name, description, level } = input;
+            if (id == -1) {
+                id = COURSES.length + 1;
+            }
             COURSES.push({
                 id,
                 name,
                 description,
                 level
             });
+            input.id = id;
             return input;
         },
         deleteCourse: (_, { id }) => {
