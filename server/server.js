@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
 import { makeExecutableSchema } from 'graphql-tools';
 import cors from 'cors';
+import { log } from 'util';
 // const express = require('express');
 // const gql = require('graphql');
 // const graphqlHTTP = require('express-graphql');
@@ -45,7 +46,8 @@ const typeDefs = `
     }
 
     type Query {
-        allCourses: [CourseType]
+        allCourses: [CourseType],
+        course(id: ID): CourseType
     }
 
     type Mutation {
@@ -58,6 +60,9 @@ const resolvers = {
     Query: {
         allCourses: () => {
             return COURSES;
+        },
+        course: (error, data) => {
+            return COURSES.find(el => el.id === data.id);
         }
     },
     Mutation: {
@@ -86,17 +91,17 @@ const resolvers = {
 };
 
 
-const schema = makeExecutableSchema({ typeDefs, resolvers});
+const schema = makeExecutableSchema({ typeDefs, resolvers });
 app.use(cors());
-app.use('/graphql', 
-        bodyParser.json(),
-        graphqlExpress({
-            schema,
-            tracing: false
-        }));
+app.use('/graphql',
+    bodyParser.json(),
+    graphqlExpress({
+        schema,
+        tracing: false
+    }));
 app.use('/graphiql',
-        graphiqlExpress({
-            endpointURL: '/graphql'
-        }));
+    graphiqlExpress({
+        endpointURL: '/graphql'
+    }));
 
 app.listen(port);
